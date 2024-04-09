@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline
+   xmlns="http://glast-ground.slac.stanford.edu/pipeline"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://glast-ground.slac.stanford.edu/pipeline https://glast-ground.slac.stanford.edu/Pipeline-II/schemas/2.2/pipeline.xsd">
+<!-- $Header$
+-->
+<task name="AspLauncher" version="4.2" type="Data">
+  <variables>
+    <!-- Default values that can be overridden at the command line. -->
+
+    <!-- variables for running at S3DF with containers -->
+    <var name="preamble"></var>  <!-- pre-amble for job executables -->
+    <var name="container_image">/sdf/group/fermi/sw/containers/fermi-rhel6.sif</var>
+    <var name="container_volumes">--bind /sdf:/sdf,/sdf/group/fermi/sw/package:/afs/slac.stanford.edu/package</var>
+    <var name="container_wrap">singularity exec ${container_volumes} ${container_image}</var>
+    <var name="extra"></var>  <!--extra batch options-->
+    <var name="jobsite">S3DFDATA</var>
+    <var name="GPL_XROOTD_DIR">/sdf/data/fermi/a/applications/xrootd/dist/v3.1.1/i386_rhel60/bin</var>
+    <var name="SCRIPT_DIR">/sdf/data/fermi/user/jchiang/asp_migration/P-II</var>
+
+    <!-- original pipeline variables, modified for S3DF -->
+    <var name="BINDIR">bin/redhat6-x86_64-64bit-gcc44-Optimized</var>
+    <var name="minimum_coverage">0.70</var>
+    <var name="datacatalog_imp">datacatalog</var>
+    <var name="logRoot">/sdf/group/fermi/ground/PipelineOutput/ASP_test/log_files</var>
+  </variables>
+  <prerequisites>
+    <prerequisite name="folder" type="string"/>
+    <prerequisite name="interval" type="integer"/>
+    <prerequisite name="frequency" type="string"/>
+    <prerequisite name="nMetStart" type="integer"/>
+    <prerequisite name="nMetStop" type="integer"/>
+    <prerequisite name="GRBOUTPUTDIR" type="string"/>
+    <prerequisite name="DRPOUTPUTDIR" type="string"/>
+    <prerequisite name="PGWAVEOUTPUTDIR" type="string"/>
+    <prerequisite name="PIPELINESERVER" type="string"/>
+    <prerequisite name="ASPLAUNCHERROOT" type="string"/>
+  </prerequisites>
+  <process name="catalogQueries" site="${jobsite}">
+    <job executable="bash ${SCRIPT_DIR}/datacat_query.sh" batchOptions="${extra}" />
+  </process>
+  <process name="launchStreams" site="${jobsite}">
+    <job executable="bash ${SCRIPT_DIR}/launch_streams.sh" batchOptions="${extra}"/>
+    <depends>
+      <after process="catalogQueries" status="SUCCESS"/>
+    </depends>
+  </process>
+</task><!--AspLauncher-->
+</pipeline>

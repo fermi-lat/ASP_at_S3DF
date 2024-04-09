@@ -1,0 +1,1 @@
+/sdf/home/g/glast/a/pipeline-II/prod/pipeline --mode DEV load /sdf/data/fermi/user/jchiang/dev/ASP/drpMonitoring/xml/DRP_monitoring.xml
