@@ -1,0 +1,2 @@
+export fermi_image=/sdf/group/fermi/sw/containers/fermi-rhel6.20230922.sif
+singularity shell -B /sdf:/sdf,/sdf/group/fermi/sw/containers/rhel6/afs:/afs ${fermi_image}

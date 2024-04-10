@@ -8,6 +8,7 @@ right_now = date2met()
 met_cutoff = 586656005
 
 unhandled = unhandledIntervals()
+print(os.path.abspath('.'))
 intervals_to_process = []
 for frequency in unhandled:
     for interval in unhandled[frequency]:

@@ -3,7 +3,7 @@
    xmlns="http://glast-ground.slac.stanford.edu/pipeline"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://glast-ground.slac.stanford.edu/pipeline https://glast-ground.slac.stanford.edu/Pipeline-II/schemas/2.2/pipeline.xsd">
-<task name="PGWave" version="10.3" type="Data">
+<task name="PGWave" version="10.6" type="Data">
   <variables>
     <!-- Default values that can be overridden at the command line. -->
 
@@ -14,6 +14,8 @@
     <var name="container_wrap">singularity exec ${container_volumes} ${container_image}</var>
     <var name="extra"></var>  <!--extra batch options-->
     <var name="jobsite">S3DFDATA</var>
+    <var name="GPL_XROOTD_DIR">/sdf/data/fermi/a/applications/xrootd/dist/v3.1.1/i386_rhel60/bin</var>
+    <var name="SCRIPT_DIR">/sdf/data/fermi/a/ground/ASP/prod/ASP_at_S3DF/pipeline_scripts</var>
 
     <!-- original pipeline variables, modified for S3DF -->
     <var name="BINDIR">bin/redhat6-x86_64-64bit-gcc44-Optimized</var>
@@ -21,9 +23,7 @@
     <var name="outputFolder">/ASP/Results/pgwave</var>
     <var name="xrootd_folder">/ASP/pgwave</var>
     <var name="GALPROP_MODEL">/sdf/data/fermi/a/ground/GLAST_EXT/diffuseModels/v5r0/gll_iem_v06.fits</var>
-    <var name="logRoot">/sdf/group/fermi/ground/PipelineOutput/ASP_test/log_files</var>
-    <var name="SCRIPT_DIR">/sdf/data/fermi/user/jchiang/asp_migration/P-II</var>
-    <var name="GPL_XROOTD_DIR">/sdf/data/fermi/a/applications/xrootd/dist/v3.1.1/i386_rhel60/bin</var>
+    <var name="logRoot">/sdf/group/fermi/ground/PipelineOutput/ASP/log_files</var>
   </variables>
   <prerequisites>
     <prerequisite name="folder" type="string"/>

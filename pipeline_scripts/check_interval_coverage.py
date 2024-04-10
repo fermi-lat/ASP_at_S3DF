@@ -1,5 +1,5 @@
 import os
-from launchStreams import get_interval, createSubDir
+from launchStreams import createSubDir
 from checkLevelOneFiles import providesCoverage
 from FileStager import FileStager
 
@@ -9,11 +9,14 @@ offset = {'six_hours' : 0,
           'daily' : 1,
           'weekly' : 2}
 
-interval, frequency, tstart, tstop = get_interval()
+interval, frequency, tstart, tstop = (int(os.environ['interval']),
+                                      os.environ['frequency'],
+                                      int(os.environ['TSTART']),
+                                      int(os.environ['TSTOP']))
 streamId = tstart + offset[frequency]
 
 def prepend_output_dir(filename):
-    return os.path.join(os.environ['OUTPUTDIR'], filename)
+    return os.path.join(os.environ['SLURM_SUBMIT_DIR'], filename)
 
 ft1_file_list = prepend_output_dir('Ft1FileList').replace("launchStreams", "catalogQueries")
 ft2_file_list = prepend_output_dir('Ft2FileList').replace("launchStreams", "catalogQueries")
@@ -30,7 +33,7 @@ if providesCoverage(tstart, tstop, min_frac, ft1_file_list, ft2_file_list,
     # Write the interval info to the output file for the pipeline createStream call.
     #
     with open(outfile, 'w') as fobj:
-        fobj.write("%s %s %s %s %s\n" % (interval, frequency, tstart, tstop, streamId))
+        fobj.write("%s %s %s %s %s %s\n" % (interval, frequency, tstart, tstop, streamId, output_dir))
 else:
     print("providesCoverage is False. outfile:", outfile)
     #
