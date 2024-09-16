@@ -3,8 +3,8 @@
 
 pipeline_command=/sdf/group/fermi/sw/pipeline-II/dev/pipeline
 
-export INST_DIR=/sdf/data/fermi/a/ground/ASP/prod/ASP-07-00-00
-export SCRIPT_DIR=/sdf/data/fermi/a/ground/ASP/prod/ASP_at_S3DF/pipeline_scripts
+export INST_DIR=/sdf/group/fermi/ground/PipelineConfig/ASP/ASP-07-00-00
+export SCRIPT_DIR=/sdf/group/fermi/ground/PipelineConfig/ASP/ASP_at_S3DF/pipeline_scripts
 export CATDIR=/sdf/data/fermi/a/ground/ASP/catalogs
 
 #
