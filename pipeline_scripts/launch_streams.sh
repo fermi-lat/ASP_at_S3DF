@@ -1,6 +1,8 @@
 #!/bin/sh
 #set -xe
 
+pipeline_command=/sdf/group/fermi/sw/pipeline-II/dev/pipeline
+
 export INST_DIR=/sdf/data/fermi/a/ground/ASP/prod/ASP-07-00-00
 export SCRIPT_DIR=/sdf/data/fermi/a/ground/ASP/prod/ASP_at_S3DF/pipeline_scripts
 export CATDIR=/sdf/data/fermi/a/ground/ASP/catalogs
@@ -19,7 +21,7 @@ while IFS= read -r line; do
     streamId=`echo $line | cut -f5 -d " "`
     OUTPUTDIR=`echo $line | cut -f6 -d " "`
     args="folder=${folder},interval=${interval},frequency=${frequency},TSTART=${tstart},TSTOP=${tstop},OUTPUTDIR=${OUTPUTDIR},CATDIR=${CATDIR},ASP_PGWAVEROOT=${INST_DIR},PIPELINE_USER=glastraw,PIPELINESERVER=DEV,datacatalog_imp=datacatalog"
-    /sdf/home/g/glast/a/pipeline-II/prod/pipeline \
+    ${pipeline_command} \
          -m ${PIPELINESERVER} createStream \
          -S ${streamId} \
          -D ${args} \

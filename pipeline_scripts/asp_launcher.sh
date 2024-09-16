@@ -1,11 +1,13 @@
 #!/bin/sh
-#set -xe
+set -xe
 
 if [ -z "$folder" ] || [ -z "$nDownlink" ] || [ -z "$PIPELINESERVER" ]
     then
         echo "PIPELINESERVER, folder, and nDownlink environment variables must be set"
         exit 1
 fi
+
+pipeline_command=/sdf/group/fermi/sw/pipeline-II/dev/pipeline
 
 export INST_DIR=/sdf/data/fermi/a/ground/ASP/prod/ASP-07-00-00
 export SCRIPT_DIR=/sdf/data/fermi/a/ground/ASP/prod/ASP_at_S3DF/pipeline_scripts
@@ -14,7 +16,7 @@ export OUTPUT_DIR=/sdf/group/fermi/ground/PipelineOutput/ASP/Results
 #
 # AspInsertIntervals
 #
-/sdf/home/g/glast/a/pipeline-II/prod/pipeline \
+${pipeline_command} \
     -m ${PIPELINESERVER} createStream \
     -S -1 \
     -D "folder=${folder},nDownlink=${nDownlink},PIPELINESERVER=${PIPELINESERVER},ASPLAUNCHERROOT=${INST_DIR},datacatalog_imp=datacatalog" \
@@ -38,7 +40,7 @@ while IFS= read -r line; do
     frequency=`echo $line | cut -f2 -d " "`
     tstart=`echo $line | cut -f3 -d " "`
     tstop=`echo $line | cut -f4 -d " "`
-    /sdf/home/g/glast/a/pipeline-II/prod/pipeline \
+    ${pipeline_command} \
         -m ${PIPELINESERVER} createStream \
         -S -1 \
         -D "folder=${folder},interval=${interval},frequency=${frequency},TSTART=${tstart},TSTOP=${tstop},GRBOUTPUT=${OUTPUT_DIR}/GRB,DRPOUTPUTDIR=${OUTPUT_DIR}/DRP,PGWAVEOUTPUTDIR=${OUTPUT_DIR}/PGWAVE,PIPELINESERVER=${PIPELINESERVER},ASPLAUNCHERROOT=${INST_DIR},datacatalog_imp=datacatalog" \
@@ -55,7 +57,7 @@ rm "$interval_file"
 ## launched.
 ##
 #GRBROOTDIR=/sdf/group/fermi/ground/PipelineOutput/ASP_test/Results/GRB
-#echo /sdf/home/g/glast/a/pipeline-II/prod/pipeline \
+#echo ${pipeline_command} \
 #    -m ${PIPELINESERVER} createStream \
 #    -S -1 \
 #    -D "DownlinkId=${nDownlink},GRBROOTDIR=${GRBROOTDIR},GRBASPROOT=${INST_DIR},datacatalog_imp=datacatalog,folder=${folder}" \
