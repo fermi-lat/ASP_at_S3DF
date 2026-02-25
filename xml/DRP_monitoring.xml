@@ -5,7 +5,7 @@
    xsi:schemaLocation="http://glast-ground.slac.stanford.edu/pipeline https://glast-ground.slac.stanford.edu/Pipeline-II/schemas/2.2/pipeline.xsd">
 <!-- $Header$
 -->
-<task name="DRP_monitoring" version="10.5" type="Data">
+<task name="DRP_monitoring" version="10.6" type="Data">
   <variables>
     <!-- Default values that can be overridden at the command line. -->
 
@@ -16,6 +16,9 @@
     <var name="container_wrap">singularity exec ${container_volumes} ${container_image}</var>
     <var name="extra"></var>  <!--extra batch options-->
     <var name="jobsite">S3DFDATA</var>
+    <var name="GPL_PARTITION">milano</var>
+    <var name="GPL_ACCOUNT">fermi:L1</var>
+    <var name="GPL_BATCHOPTIONS">--partition ${GPL_PARTITION} --account ${GPL_ACCOUNT} ${extra}</var>
     <var name="GPL_XROOTD_DIR">/sdf/data/fermi/a/applications/xrootd/dist/v3.1.1/i386_rhel60/bin</var>
     <var name="SCRIPT_DIR">/sdf/group/fermi/ground/PipelineConfig/ASP/ASP_at_S3DF/pipeline_scripts</var>
 
@@ -41,12 +44,12 @@
   </prerequisites>
 
   <process name="catalogQuery" site="${jobsite}">
-    <job executable="bash ${SCRIPT_DIR}/drp_datacat_query.sh" batchOptions="${extra}" />
+    <job executable="bash ${SCRIPT_DIR}/drp_datacat_query.sh" batchOptions="${GPL_BATCHOPTIONS}" />
   </process>
 
   <process name="getIntervalData" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/getIntervalData.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="catalogQuery" status="SUCCESS"/>
     </depends>
@@ -54,7 +57,7 @@
 
   <process name="diffuseResponses" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/diffuseResponses.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="getIntervalData" status="SUCCESS"/>
     </depends>
@@ -62,7 +65,7 @@
 
   <process name="sourceSelection" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/sourceSelection.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="getIntervalData" status="SUCCESS"/>
     </depends>
@@ -70,7 +73,7 @@
 
   <process name="assignRois" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/assignRois.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="sourceSelection" status="SUCCESS"/>
     </depends>
@@ -98,7 +101,7 @@
 
   <process name="createArchive" autoRetryMaxAttempts="1" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/drp_createTarBall.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="roiAnalysis.dummyProcess" status="SUCCESS"/>
     </depends>
@@ -135,7 +138,7 @@
 
   <process name="clean_up_files" autoRetryMaxAttempts="1" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/drp_clean_up_files.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="registerArchive" status="SUCCESS"/>
     </depends>
@@ -147,7 +150,7 @@
         <var name="ROI_ID">${pipeline.stream}</var>
       </variables>
       <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/getRoiData.sh"
-           batchOptions="${extra}"/>
+           batchOptions="${GPL_BATCHOPTIONS}"/>
     </process>
 
     <process name="exposureMap" autoRetryMaxAttempts="1" site="${jobsite}">
@@ -176,7 +179,7 @@
         <var name="ROI_ID">${pipeline.stream}</var>
       </variables>
       <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/combineDrpExpMaps.sh"
-           batchOptions="${extra}"/>
+           batchOptions="${GPL_BATCHOPTIONS}"/>
       <depends>
         <after process="exposureSubMap.drpExpMap" status="SUCCESS"/>
       </depends>
@@ -187,7 +190,7 @@
         <var name="ROI_ID">${pipeline.stream}</var>
       </variables>
       <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/sourceAnalysis.sh"
-           batchOptions="${extra}"/>
+           batchOptions="${GPL_BATCHOPTIONS}"/>
       <depends>
         <after process="combineExpMaps" status="SUCCESS"/>
       </depends>
@@ -234,7 +237,7 @@
           <var name="EXPMAP_ID">${pipeline.stream}</var>
         </variables>
         <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/drpExpMap.sh"
-             batchOptions="${extra}"/>
+             batchOptions="${GPL_BATCHOPTIONS}"/>
       </process>
     </task> <!--exposureSubMap-->
 
@@ -247,7 +250,7 @@
       </prerequisites>
       <process name="fitEnergyBand" autoRetryMaxAttempts="2" site="${jobsite}">
         <job executable="${preamble} ${container_wrap} ${DRPMONITORINGROOT}/${BINDIR}/fitEnergyBand.sh"
-             batchOptions="${extra}"/>
+             batchOptions="${GPL_BATCHOPTIONS}"/>
       </process>
     </task> <!--energyBandAnalysis-->
 

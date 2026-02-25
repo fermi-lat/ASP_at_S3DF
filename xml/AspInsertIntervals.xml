@@ -3,7 +3,7 @@
    xmlns="http://glast-ground.slac.stanford.edu/pipeline"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://glast-ground.slac.stanford.edu/pipeline https://glast-ground.slac.stanford.edu/Pipeline-II/schemas/2.2/pipeline.xsd">
-<task name="AspInsertIntervals" version="2.3" type="Data">
+<task name="AspInsertIntervals" version="2.4" type="Data">
   <variables>
     <!-- Default values that can be overridden at the command line. -->
 
@@ -14,6 +14,9 @@
     <var name="container_wrap">singularity exec ${container_volumes} ${container_image}</var>
     <var name="extra"></var>  <!--extra batch options-->
     <var name="jobsite">S3DFDATA</var>
+    <var name="GPL_PARTITION">milano</var>
+    <var name="GPL_ACCOUNT">fermi:L1</var>
+    <var name="GPL_BATCHOPTIONS">--partition ${GPL_PARTITION} --account ${GPL_ACCOUNT} ${extra}</var>
     <var name="GPL_XROOTD_DIR">/sdf/data/fermi/a/applications/xrootd/dist/v3.1.1/i386_rhel60/bin</var>
     <var name="SCRIPT_DIR">/sdf/group/fermi/ground/PipelineConfig/ASP/ASP_at_S3DF/pipeline_scripts</var>
 
@@ -29,7 +32,7 @@
     <prerequisite name="ASPLAUNCHERROOT" type="string"/>
   </prerequisites>
   <process name="runSubtask" site="${jobsite}">
-    <job executable="bash ${SCRIPT_DIR}/interval_query.sh" batchOptions="${extra}" />
+    <job executable="bash ${SCRIPT_DIR}/interval_query.sh" batchOptions="${GPL_BATCHOPTIONS}" />
     <createsSubtasks>
       <subtask>insertIntervalsTask</subtask>
     </createsSubtasks>
@@ -42,7 +45,7 @@
     </prerequisites>
     <process name="insertInterval" site="${jobsite}">
       <job executable="${preamble} ${container_wrap} ${ASPLAUNCHERROOT}/${BINDIR}/insertIntervals.sh"
-           batchOptions="${extra}"/>
+           batchOptions="${GPL_BATCHOPTIONS}"/>
     </process>
   </task> <!--insertIntervalsTask-->
 </task><!--AspInsertIntervals-->

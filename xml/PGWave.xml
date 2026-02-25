@@ -3,7 +3,7 @@
    xmlns="http://glast-ground.slac.stanford.edu/pipeline"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://glast-ground.slac.stanford.edu/pipeline https://glast-ground.slac.stanford.edu/Pipeline-II/schemas/2.2/pipeline.xsd">
-<task name="PGWave" version="10.7" type="Data">
+<task name="PGWave" version="10.9" type="Data">
   <variables>
     <!-- Default values that can be overridden at the command line. -->
 
@@ -14,6 +14,10 @@
     <var name="container_wrap">singularity exec ${container_volumes} ${container_image}</var>
     <var name="extra"></var>  <!--extra batch options-->
     <var name="jobsite">S3DFDATA</var>
+      <var name="GPL_PARTITION">milano</var>
+    <var name="GPL_ACCOUNT">fermi:L1</var>
+    <var name="GPL_BATCHOPTIONS">--partition ${GPL_PARTITION} --account ${GPL_ACCOUNT} ${extra}</var>
+
     <var name="GPL_XROOTD_DIR">/sdf/data/fermi/a/applications/xrootd/dist/v3.1.1/i386_rhel60/bin</var>
     <var name="SCRIPT_DIR">/sdf/group/fermi/ground/PipelineConfig/ASP/ASP_at_S3DF/pipeline_scripts</var>
 
@@ -38,12 +42,12 @@
   </prerequisites>
 
   <process name="catalogQuery" site="${jobsite}">
-    <job executable="bash ${SCRIPT_DIR}/datacat_query.sh" batchOptions="${extra}" />
+    <job executable="bash ${SCRIPT_DIR}/datacat_query.sh" batchOptions="${GPL_BATCHOPTIONS}" />
   </process>
 
   <process name="getPgwInputData" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${ASP_PGWAVEROOT}/${BINDIR}/getPgwInputData.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="catalogQuery" status="SUCCESS"/>
     </depends>
@@ -51,7 +55,7 @@
 
   <process name="runpgw" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${ASP_PGWAVEROOT}/${BINDIR}/runpgw.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="getPgwInputData" status="SUCCESS"/>
     </depends>
@@ -59,7 +63,7 @@
 
   <process name="refinePositions" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${ASP_PGWAVEROOT}/${BINDIR}/refinePositions.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="runpgw" status="SUCCESS"/>
     </depends>
@@ -67,7 +71,7 @@
 
   <process name="runsrcid" autoRetryMaxAttempts="2" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${ASP_PGWAVEROOT}/${BINDIR}/runsrcid.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="refinePositions" status="SUCCESS"/>
     </depends>
@@ -75,7 +79,7 @@
 
   <process name="createArchive" autoRetryMaxAttempts="1" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${ASP_PGWAVEROOT}/${BINDIR}/asp_pgwave_createTarBall.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="runsrcid" status="SUCCESS"/>
     </depends>
@@ -83,8 +87,8 @@
 
   <process name="registerData" site="${jobsite}">
     <script><![CDATA[
-    print "using datacatalog implementation: ", datacatalog_imp
-    datacat = eval(datacatalog_imp)
+    #print "using datacatalog implementation: ", datacatalog_imp
+    #datacat = eval(datacatalog_imp)
     streamId = pipeline.getStream()
     print "registering with stream ID = ", streamId
     #
@@ -98,7 +102,7 @@
     attributes = (('nDatasetId=%s:nMetStart=%s:nMetStop=%s:' +
                    'sFrequency=%s:nInterval=%i') %
                   (streamId, TSTART, TSTOP, frequency, interval))
-    print attributes
+    print "attributes: ", attributes
 
     outfile = filePath.split('/')[-1]
     logicalPath = '%s/%s:%s' % (outputFolder, dataType, outfile)
@@ -106,7 +110,7 @@
 
     if filePath.find('root') == 0:
         filePath += "@SLAC_XROOT"
-    print filePath
+    print "filePath: ", filePath
 
     datacatalog.registerDataset(dataType, logicalPath, filePath,
                                 attributes)
@@ -126,25 +130,25 @@
     for outfile, dataType in zip(files, dataTypes):
         logicalPath = ('%s/%s/%s:%s'
                        % (outputFolder, frequency, dataType, outfile))
-        print logicalPath
+        print "logicalPath..:", logicalPath
         filePath = '%s/%s' % (OUTPUTDIR, outfile)
-        print filePath
+        print "filePath.....: ", filePath
         attributes = ('nDatasetId=%s:nMetStart=%i:nMetStop=%i'
                       % (streamId, TSTART, TSTOP))
-        print attributes
-        datacat.registerDataset(dataType, logicalPath,
-                                filePath, attributes)
+        print "attributes...:", attributes
+        datacatalog.registerDataset(dataType, logicalPath, filePath, attributes)
+
     # FT2 is a special case
     outfile = 'FT2_%s.fits' % suffix
     logicalPath = ('%s/%s/%s:%s'
                    % (outputFolder, frequency, 'FT2', outfile))
-    print logicalPath
+    print "logicalPath: ",logicalPath
     filePath = '%s/%s' % (OUTPUTDIR, outfile)
-    print filePath
+    print "filePath: ", filePath
     attributes = ('nDatasetId=%s:nMetStart=%i:nMetStop=%i'
                   % (streamId, TSTART, TSTOP))
-    print attributes
-    datacat.registerDataset('FT2', logicalPath, filePath, attributes)
+    print "attributes: ", attributes
+    datacatalog.registerDataset('FT2', logicalPath, filePath, attributes)
     #
     if frequency in ('six_hours', 'daily', 'weekly'):
         pipeline.createSubstream("drpMonitoring", 0,
@@ -160,7 +164,7 @@
 
   <process name="clean_up_files" autoRetryMaxAttempts="1" site="${jobsite}">
     <job executable="${preamble} ${container_wrap} ${ASP_PGWAVEROOT}/${BINDIR}/asp_pgwave_clean_up_files.sh"
-         batchOptions="${extra}"/>
+         batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="registerData" status="SUCCESS"/>
     </depends>
@@ -172,7 +176,7 @@
     </prerequisites>
     <process name="launchDrpMonitoring" autoRetryMaxAttempts="1" site="${jobsite}">
       <job executable="bash ${SCRIPT_DIR}/launch_drp_monitoring.sh"
-           batchOptions="${extra}"/>
+           batchOptions="${GPL_BATCHOPTIONS}"/>
     </process>
   </task><!--drpMonitoring-->
 

@@ -5,7 +5,7 @@
    xsi:schemaLocation="http://glast-ground.slac.stanford.edu/pipeline https://glast-ground.slac.stanford.edu/Pipeline-II/schemas/2.2/pipeline.xsd">
 <!-- $Header$
 -->
-<task name="AspLauncher" version="4.6" type="Data">
+<task name="AspLauncher" version="4.7" type="Data">
   <variables>
     <!-- Default values that can be overridden at the command line. -->
 
@@ -16,6 +16,9 @@
     <var name="container_wrap">singularity exec ${container_volumes} ${container_image}</var>
     <var name="extra"></var>  <!--extra batch options-->
     <var name="jobsite">S3DFDATA</var>
+    <var name="GPL_PARTITION">milano</var>
+    <var name="GPL_ACCOUNT">fermi:L1</var>
+    <var name="GPL_BATCHOPTIONS">--partition ${GPL_PARTITION} --account ${GPL_ACCOUNT} ${extra}</var>
     <var name="GPL_XROOTD_DIR">/sdf/data/fermi/a/applications/xrootd/dist/v3.1.1/i386_rhel60/bin</var>
     <var name="SCRIPT_DIR">/sdf/group/fermi/ground/PipelineConfig/ASP/ASP_at_S3DF/pipeline_scripts</var>
 
@@ -38,10 +41,10 @@
     <prerequisite name="ASPLAUNCHERROOT" type="string"/>
   </prerequisites>
   <process name="catalogQueries" site="${jobsite}">
-    <job executable="bash ${SCRIPT_DIR}/datacat_query.sh" batchOptions="${extra}" />
+    <job executable="bash ${SCRIPT_DIR}/datacat_query.sh" batchOptions="${GPL_BATCHOPTIONS}" />
   </process>
   <process name="launchStreams" site="${jobsite}">
-    <job executable="bash ${SCRIPT_DIR}/launch_streams.sh" batchOptions="${extra}"/>
+    <job executable="bash ${SCRIPT_DIR}/launch_streams.sh" batchOptions="${GPL_BATCHOPTIONS}"/>
     <depends>
       <after process="catalogQueries" status="SUCCESS"/>
     </depends>

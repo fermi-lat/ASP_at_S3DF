@@ -3,14 +3,15 @@
 #export PIPELINE_SUMMARY=pipeline_summary
 #export folder=/Data/Flight/Level1/LPA
 #OUTPUTDIR=.
-#nDownlink=240404010
+#nDownlink=240901000
 
-query="DataType == \"FT1\" && nDownlink == ${nDownlink}"
+#query="DataType == \"FT1\" && nDownlink == ${nDownlink}"
+#echo "query=" $query
+# NICO changed this:
+query="nDownlink == ${nDownlink}"
+echo "query=" $query
 
-vars=`/sdf/home/g/glast/a/datacat/prod/datacat \
-         find --group FT1 --filter "$query" \
-         --display nMetStart --display nMetStop \
-         ${folder}`
+vars=`/sdf/home/g/glast/a/datacat/prod/datacat --mode ${PIPELINESERVER} find --group FT1 --filter "$query" --display nMetStart --display nMetStop ${folder}`
 
 echo "vars:" $vars
 nMetStart=`echo $vars | cut -f2 -d " "`
